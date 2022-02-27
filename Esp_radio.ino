@@ -1,147 +1,147 @@
 //******************************************************************************************
-//*  Esp_radio -- Webradio receiver for ESP8266, (color) display and VS1053 MP3 module,    *
-//*               by Ed Smallenburg (ed@smallenburg.nl)                                    *
-//*  With ESP8266 running at 80 MHz, it is capable of handling up to 256 kb bitrate.       *
-//*  With ESP8266 running at 160 MHz, it is capable of handling up to 320 kb bitrate.      *
+//*  Esp_radio -- 用于 ESP8266、（彩色）显示器和 VS1053 MP3 模块的 Webradio 接收器    *
+//*               作者 Ed Smallenburg (ed@smallenburg.nl)                                    *
+//*  ESP8266 以 80 MHz 运行，它能够处理高达 256 kb 的比特率。       *
+//*  ESP8266 以 160 MHz 运行，它能够处理高达 320 kb 的比特率。      *
 //******************************************************************************************
-// ESP8266 libraries used:
-//  - ESP8266WiFi       - Part of ESP8266 Arduino default libraries.
-//  - SPI               - Part of Arduino default libraries.
+// 使用的 ESP8266 库：
+//  - ESP8266WiFi       - ESP8266 Arduino 默认库的一部分。
+//  - SPI               - Arduino 默认库的一部分。
 //  - Adafruit_GFX      - https://github.com/adafruit/Adafruit-GFX-Library
 //  - TFT_ILI9163C      - https://github.com/sumotoy/TFT_ILI9163C
 //  - ESPAsyncTCP       - https://github.com/me-no-dev/ESPAsyncTCP
 //  - ESPAsyncWebServer - https://github.com/me-no-dev/ESPAsyncWebServer
 //  - FS - https://github.com/esp8266/arduino-esp8266fs-plugin/releases/download/0.2.0/ESP8266FS-0.2.0.zip
-//  - ArduinoOTA        - Part of ESP8266 Arduino default libraries.
+//  - ArduinoOTA        - ESP8266 Arduino 默认库的一部分。
 //  - AsyncMqttClient   - https://github.com/marvinroger/async-mqtt-client
 //  - TinyXML           - Fork https://github.com/adafruit/TinyXML
 //
-// A library for the VS1053 (for ESP8266) is not available (or not easy to find).  Therefore
-// a class for this module is derived from the maniacbug library and integrated in this sketch.
+// VS1053（用于 ESP8266）的库不可用（或不容易找到）。 因此，
+// 这个模块的一个类是从 maniacbug 库派生的，并集成在这个sketch草图中。
 //
-// Compiling: Set SPIFS to 3 MB.  Set IwIP variant to "V1.4 Higher Bandwidth".
-// See http://www.internet-radio.com for suitable stations.  Add the stations of your choice
-// to the .ini-file.
+// 编译:设置SPIFS为3mb。设置IwIP变量为“V1.4更高带宽”。
+// 有关合适的电台，请参见 http://www.internet-radio.com。
+// 将您选择的电台添加到 .ini 文件中。
 //
-// Brief description of the program:
-// First a suitable WiFi network is found and a connection is made.
-// Then a connection will be made to a shoutcast server.  The server starts with some
-// info in the header in readable ascii, ending with a double CRLF, like:
-//  icy-name:Classic Rock Florida - SHE Radio
-//  icy-genre:Classic Rock 60s 70s 80s Oldies Miami South Florida
+// 程序简要说明：
+// 首先找到合适的 WiFi 网络并建立连接。
+// 然后将与广播服务器建立连接。
+// 服务器以可读 ascii 的标头中的一些信息开头，以双 CRLF 结尾，例如：
+//  icy-name:佛罗里Florida达经典摇滚 - SHE Radio
+//  icy-genre:经典摇滚 60 年代 70 年代 80 年代老歌 迈阿密 南佛罗里达
 //  icy-url:http://www.ClassicRockFLorida.com
 //  content-type:audio/mpeg
 //  icy-pub:1
-//  icy-metaint:32768          - Metadata after 32768 bytes of MP3-data
-//  icy-br:128                 - in kb/sec (for Ogg this is like "icy-br=Quality 2"
+//  icy-metaint:32768          - MP3后元数据在32768字节
+//  icy-br:128                 - 以 kb/sec 为单位（对于 Ogg，这就像 "icy-br=Quality 2"
 //
-// After de double CRLF is received, the server starts sending mp3- or Ogg-data.  For mp3, this
-// data may contain metadata (non mp3) after every "metaint" mp3 bytes.
-// The metadata is empty in most cases, but if any is available the content will be presented on the TFT.
-// Pushing the input button causes the player to select the next preset station present in the .ini file.
+// 收到 de double CRLF 后，服务器开始发送 mp3 或 Ogg 数据。 对于 mp3，
+// 这个数据可能包含元数据(非mp3)在每个“元数据”mp3字节后。
+// 在大多数情况下，元数据是空的，但如果有可用的元数据，则内容将显示在TFT上。
+// 按下输入按钮，播放器就会选择ini文件中的下一个预设站。
 //
-// The display used is a Chinese 1.8 color TFT module 128 x 160 pixels.  The TFT_ILI9163C.h
-// file has been changed to reflect this particular module.  TFT_ILI9163C.cpp has been
-// changed to use the full screenwidth if rotated to mode "3".  Now there is room for 26
-// characters per line and 16 lines.  Software will work without installing the display.
-// If no TFT is used, you may use GPIO2 and GPIO15 as control buttons.  See definition of "USETFT" below.
-// Switches are than programmed as:
-// GPIO2 : "Goto station 1"
-// GPIO0 : "Next station"
-// GPIO15: "Previous station".  Note that GPIO15 has to be LOW when starting the ESP8266.
-//         The button for GPIO15 must therefore be connected to VCC (3.3V) instead of GND.
+// 使用的显示器中国1.8彩色TFT模块128 x 160像素。
+// TFT_ILI9163C.h文件已被更改，以反映这个特定的模块。
+// TFT_ILI9163C.cpp已被更改为使用全屏幕宽度，如果旋转到模式"3"。
+// 现在每行有26个字符和16行。软件不需要安装显示器也能工作。
+// 如果不使用TFT，你可以使用GPIO2和GPIO15作为控制按钮。参见下面“USE使用TFT”的定义。
+// 开关被编程为：
+// GPIO2 : "转到 站点1"
+// GPIO0 : "下一站"
+// GPIO15: "上一站".  请注意，当启动ESP8266时，GPIO15必须是LOW。
+//         因此，GPIO15 的按钮必须连接到 VCC (3.3V) 而不是 GND。
 
 //
-// For configuration of the WiFi network(s): see the global data section further on.
+// 对于 WiFi 网络的配置：请参阅进一步的全局数据部分。
 //
-// The SPI interface for VS1053 and TFT uses hardware SPI.
+// VS1053 和 TFT 的 SPI 接口使用硬件 SPI。
 //
-// Wiring:
-// NodeMCU  GPIO    Pin to program  Wired to LCD        Wired to VS1053      Wired to rest
+// 接线：
+// NodeMCU  GPIO    Pin引脚编程     连接到 LCD           连接到 VS1053       连接到 rest
 // -------  ------  --------------  ---------------     -------------------  ---------------------
 // D0       GPIO16  16              -                   pin 1 DCS            -
-// D1       GPIO5    5              -                   pin 2 CS             LED on nodeMCU
+// D1       GPIO5    5              -                   pin 2 CS             nodeMCU上的LED
 // D2       GPIO4    4              -                   pin 4 DREQ           -
-// D3       GPIO0    0 FLASH        -                   -                    Control button "Next station"
-// D4       GPIO2    2              pin 3 (D/C)         -                    (OR)Control button "Station 1"
+// D3       GPIO0    0 FLASH        -                   -                    控制按钮“下一站”
+// D4       GPIO2    2              pin 3 (D/C)         -                    (OR)控制按钮“站点1”
 // D5       GPIO14  14 SCLK         pin 5 (CLK)         pin 5 SCK            -
 // D6       GPIO12  12 MISO         -                   pin 7 MISO           -
 // D7       GPIO13  13 MOSI         pin 4 (DIN)         pin 6 MOSI           -
-// D8       GPIO15  15              pin 2 (CS)          -                    (OR)Control button "Previous station"
-// D9       GPI03    3 RXD0         -                   -                    Reserved serial input
-// D10      GPIO1    1 TXD0         -                   -                    Reserved serial output
+// D8       GPIO15  15              pin 2 (CS)          -                    (OR)控制按钮“上一站”
+// D9       GPI03    3 RXD0         -                   -                    预留串行输入
+// D10      GPIO1    1 TXD0         -                   -                    预留串行输出
 // -------  ------  --------------  ---------------     -------------------  ---------------------
-// GND      -        -              pin 8 (GND)         pin 8 GND            Power supply
-// VCC 3.3  -        -              pin 6 (VCC)         -                    LDO 3.3 Volt
+// GND      -        -              pin 8 (GND)         pin 8 GND            电源Power supply
+// VCC 3.3  -        -              pin 6 (VCC)         -                    LDO 3.3 伏Volt
 // VCC 5 V  -        -              pin 7 (BL)          pin 9 5V             Power supply
-// RST      -        -              pin 1 (RST)         pin 3 RESET          Reset circuit
+// RST      -        -              pin 1 (RST)         pin 3 RESET          复位电路
 //
-// The reset circuit is a circuit with 2 diodes to GPIO5 and GPIO16 and a resistor to ground
-// (wired OR gate) because there was not a free GPIO output available for this function.
-// This circuit is included in the documentation.
-// Issues:
-// Webserver produces error "LmacRxBlk:1" after some time.  After that it will work very slow.
-// The program will reset the ESP8266 in such a case.  Now we have switched to async webserver,
-// the problem still exists, but the program will not crash anymore.
-// Upload to ESP8266 not reliable.
+// 复位电路是一个带有 2 个连接到 GPIO5 和 GPIO16 的二极管和一个接地电阻 (wired OR gate有线或门) 的电路，
+// 因为没有可用于此功能的空闲 GPIO 输出。
+// 该电路包含在文档中。
+// 问题:Issues:
+// Webserver在一段时间后产生错误"LmacRxBlk:1"。在那之后，它会工作得很慢。
+// 在这种情况下，程序将重置ESP8266。现在我们切换到async异步 webserver，
+// 问题仍然存在，但程序将不再崩溃。
+// 上传到ESP8266不可靠。
 //
-// 31-03-2016, ES: First set-up.
-// 01-04-2016, ES: Detect missing VS1053 at start-up.
-// 05-04-2016, ES: Added commands through http server on port 80.
-// 14-04-2016, ES: Added icon and switch preset on stream error.
-// 18-04-2016, ES: Added SPIFFS for webserver.
-// 19-04-2016, ES: Added ringbuffer.
-// 20-04-2016, ES: WiFi Passwords through SPIFFS files, enable OTA.
-// 21-04-2016, ES: Switch to Async Webserver.
-// 27-04-2016, ES: Save settings, so same volume and preset will be used after restart.
-// 03-05-2016, ES: Add bass/treble settings (see also new index.html).
-// 04-05-2016, ES: Allow stations like "skonto.ls.lv:8002/mp3".
-// 06-05-2016, ES: Allow hidden WiFi station if this is the only .pw file.
-// 07-05-2016, ES: Added preset selection in webserver.
-// 12-05-2016, ES: Added support for Ogg-encoder.
-// 13-05-2016, ES: Better Ogg detection.
-// 17-05-2016, ES: Analog input for commands, extra buttons if no TFT required.
-// 26-05-2016, ES: Fixed BUTTON3 bug (no TFT).
-// 27-05-2016, ES: Fixed restore station at restart.
-// 04-07-2016, ES: WiFi.disconnect clears old connection now (thanks to Juppit).
-// 23-09-2016, ES: Added commands via MQTT and Serial input, Wifi set-up in AP mode.
-// 04-10-2016, ES: Configuration in .ini file. No more use of EEPROM and .pw files.
-// 11-10-2016, ES: Allow stations that have no bitrate in header like icecast.err.ee/raadio2.mp3.
-// 14-10-2016, ES: Updated for async-mqtt-client-master 0.5.0
-// 22-10-2016, ES: Correction mute/unmute.
-// 15-11-2016, ES: Support for .m3u playlists.
-// 22-12-2016, ES: Support for localhost (play from SPIFFS).
-// 28-12-2016, ES: Implement "Resume" request.
-// 31-12-2016, ES: Allow ContentType "text/css".
-// 02-01-2017, ES: Webinterface in PROGMEM.
-// 16-01-2017, ES: Correction playlists.
-// 17-01-2017, ES: Bugfix config page and playlist.
-// 23-01-2017, ES: Bugfix playlist.
-// 26-01-2017, ES: Check on wrong icy-metaint.
-// 30-01-2017, ES: Allow chunked transfer encoding.
-// 01-02-2017, ES: Bugfix file upload.
-// 26-04-2017, ES: Better output webinterface on preset change.
-// 03-05-2017, ES: Prevent to start inputstream if no network.
-// 04-05-2017, ES: Integrate iHeartRadio, thanks to NonaSuomy.
-// 09-05-2017, ES: Fixed abs problem.
-// 11-05-2017, ES: Convert UTF8 characters before display, thanks to everyb313.
-// 24-05-2017, ES: Correction. Do not skip first part of .mp3 file.
-// 26-05-2017, ES: Correction playing from .m3u playlist and LC/UC problem.
-// 31-05-2017, ES: Volume indicator on TFT.
-// 02-02-2018, ES: Force 802.11N connection.
-// 18-04-2018, ES: Workaround for not working wifi.connected().
-// 05-10-2018, ES: Fixed exception if no network was found.
-// 23-04-2018, ES: Check BASS setting.
-// 06-07-2021, ES: Switched to LittleFS.
-// 06-07-2021, ES: Added SPI RAM (experimental).
-// 08-02-2022, ES: Added redirection.
+// 31-03-2016，ES：第一次设置。
+// 01-04-2016，ES：开机检测缺失VS1053。
+// 05-04-2016，es：通过80端口http服务器添加命令。
+// 14-04-2016，ES：流错新增图标和开关预置。
+// 2016-04-18，ES：增加webserver尖峰。
+// 19-04-2016，ES：增加环缓冲区。
+// 20-04-2016，ES：WiFi密码穿透SPIFF文件，开启OTA。
+// 21-04-2016，ES：切换到异步Webserver。
+// 27-04-2016，ES：保存设置，重启后使用相同的音量和预置。
+// 03-05-2016，ES：添加低音/高音设置(另请参见new index.html)。
+// 04-05-2016，es：允许“skonto.ls.lv：8002/mp3”这样的站点。
+// 06-05-2016，es：如果这是唯一的.pw文件，则允许隐藏WiFi站。
+// 07-05-2016，es：在webserver中增加预置选择。
+// 2016-12-05-2016，ES：新增OGG-ENCODER支持。
+// 2016-05-13，ES：更好的Ogg检测。
+// 17-05-2016，ES：用于命令的模拟输入，如果不需要TFT，则附加按钮。
+// 2016-05-26，ES：修复BUTTON3 bug(无TFT)。
+// 27-05-2016，ES：修复重启时的恢复站。
+//2016年04月07日，ES：WiFi.Disconnect现在清除旧连接(感谢Juppot)。
+//23-09-2016，ES：通过MQTT和串行输入增加命令，AP模式Wifi设置。
+//2016-04-10，es：.ini文件中的配置。不再使用EEPROM和.pw文件。
+//11-10-2016，ES：允许头部没有码率的站点，如icecast.err.ee/raadio2.mp3。
+//2016-14-10，ES：更新为Async-MQTT-Client-MASTER 0.5.0。
+//2016-22-10，ES：修正静音/取消静音。
+//2016-11-15，ES：支持.m3u播放列表。
+//2016年12月22日，ES：支持localhost(从SPIFF播放)。
+//2016-12-28，ES：实现Resume请求。
+//31-12-2016，es：允许contentType“text/css”
+//02-01-2017，ES：PROGMEM中的Webinterface。
+//16-01-2017，ES：更正播放列表。
+//17-01-2017，es：bugfix配置页面和播放列表。
+//23-01-2017，es：bugfix播放列表。
+//26-01-2017，ES：检查错误的冰彩。
+//30-01-2017，es：允许分块传输编码。
+//01-02-2017，es：修复文件上传。
+//26-04-2017，ES：更好地输出预置变化的网页界面。
+//03-05-2017，ES：无网络禁止启动inputstream。
+//2017-04-05-2017，ES：集成iHeartRadio，感谢NonaSuomy。
+//09-05-2017，es：修复abs问题。
+//11-05-2017，es：显示前转换UTF8字符，感谢Everb313。
+//24-05-2017，ES：更正。请勿跳过.mp3文件的第一部分。
+//26-05-2017，ES：更正.m3u播放列表和LC/UC问题。
+//31-05-2017，ES：TFT音量指示灯。
+//02-02-2018，es：强制802.11n连接。
+//18-04-2018，ES：无法使用wifi.connected()的解决方法。
+//05-10-2018，ES：修复找不到网络异常。
+//23-04-2018，es：检查低音设置。
+//06-07-2021，ES：切换到LittleFS。
+//06-07-2021，ES：新增SPI RAM(实验性)。
+// 08-02-2022，es：新增重定向。
 //
-// Define the version number, also used for webserver as Last-Modified header:
+// 定义版本号，也用于 webserver 作为 Last-Modified 头：
 #define VERSION "Fri, 11 Feb 2022 13:05:00 GMT"
-// Experimental SPI-RAM
-//#define SPIRAM                                 // Use SPIRAM as ringbuffer. Undefined = do not use
-//#define SPIRAMDELAY 100000                     // Delay (in bytes) before reading from SPIRAM
-// TFT.  Define USETFT if required.
+// 实验性 SPI-RAM
+//#define SPIRAM                                 // 使用 SPIRAM 作为环形缓冲区。 未定义 = 不使用
+//#define SPIRAMDELAY 100000                     // 从 SPIRAM 读取之前的延迟(单位bytes)
+// TFT.  如果需要，定义 USETFT。
 #define USETFT
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -168,11 +168,11 @@ extern "C"
   #include "user_interface.h"
 }
 
-// Definitions for 3 control switches on analog input
-// You can test the analog input values by holding down the switch and select /?analog=1
-// in the web interface. See schematics in the documentation.
-// Switches are programmed as "Goto station 1", "Next station" and "Previous station" respectively.
-// Set these values to 2000 if not used or tie analog input to ground.
+// 模拟输入上 3 个控制开关的定义
+// 您可以通过按住开关并选择 /?analog=1 来测试模拟输入值
+// 在网页界面中。 请参阅文档中的示意图。
+// 开关分别编程为“Goto station 1”、“Next station”和“Previous station”。
+// 如果不使用，请将这些值设置为 2000，或者将模拟输入接地。
 #define NUMANA  3
 //#define asw1    252
 //#define asw2    334
@@ -181,7 +181,7 @@ extern "C"
 #define asw2    2000
 #define asw3    2000
 //
-// Color definitions for the TFT screen (if used)
+// TFT 屏幕的颜色定义（如果使用）
 #define BLACK   0x0000
 #define BLUE    0xF800
 #define RED     0x001F
@@ -189,34 +189,34 @@ extern "C"
 #define CYAN    GREEN | BLUE
 #define MAGENTA RED | BLUE
 #define YELLOW  RED | GREEN
-// Digital I/O used
-// Pins for VS1053 module
+// 使用的数字 I/O
+// VS1053 模块的引脚
 #define VS1053_CS     5
 #define VS1053_DCS    16
 #define VS1053_DREQ   4
-// Pins CS and DC for TFT module (if used, see definition of "USETFT")
+// TFT 模块的 CS 和 DC 引脚（如果使用，请参见“USETFT”的定义）
 #define TFT_CS 15
 #define TFT_DC 2
-// Control button (GPIO) for controlling station
+//控制station站的控制按钮（GPIO）
 #define BUTTON1 2
 #define BUTTON2 0
 #define BUTTON3 15
-// Ringbuffer for smooth playing. 20000 bytes is 160 Kbits, about 1.5 seconds at 128kb bitrate.
-// If buffer is too long, the webinterface does not work anymore
+// 用于流畅播放的环形缓冲区。 20000 字节是 160 Kbits，在 128kb 比特率下大约需要 1.5 秒。
+// 如果缓冲区太长，Web 界面将不再工作
 #define RINGBFSIZ 18000
-// Debug buffer size
+// 调试缓冲区大小
 #define DEBUG_BUFFER_SIZE 100
-// Name of the ini file
+//ini文件的名字
 #define INIFILENAME "/radio.ini"
-// Access point name if connection to WiFi network fails.  Also the hostname for WiFi and OTA.
-// Not that the password of an AP must be at least as long as 8 characters.
-// Also used for other naming.
+// 如果连接到 WiFi 网络失败，则接入点名称。也是 WiFi 和 OTA 的主机名。
+// 并不是AP的密码必须至少有8个字符。
+// 也用于其他命名。
 #define NAME "Esp-radio"
-// Maximum number of MQTT reconnects before give-up
+// 放弃之前MQTT重新连接的最大数量
 #define MAXMQTTCONNECTS 20
 //
 //******************************************************************************************
-// Forward declaration of various functions                                                *
+// 各种函数的转发声明                                               *
 //******************************************************************************************
 //void   displayinfo ( const char* str, uint16_t pos, uint16_t height, uint16_t color ) ;
 void   showstreamtitle ( const char* ml, bool full = false ) ;
@@ -241,26 +241,26 @@ void XML_callback ( uint8_t statusflags, char* tagName, uint16_t tagNameLen,
 
 //
 //******************************************************************************************
-// Global data section.                                                                    *
+// 全局数据段。                                                                   *
 //******************************************************************************************
-// There is a block ini-data that contains some configuration.  Configuration data is      *
-// saved in the SPIFFS file radio.ini by the webinterface.  On restart the new data will   *
-// be read from this file.                                                                 *
-// Items in ini_block can be changed by commands from webserver/MQTT/Serial.               *
+// 有一个块 ini-data 包含一些配置。 配置数据为 *
+// 通过网络界面保存在 SPIFFS 文件 radio.ini 中。 重新启动时，新数据将 *
+// 从此文件中读取。 *
+// ini_block 中的项目可以通过来自 webserver/MQTT/Serial 的命令进行更改。               *
 //******************************************************************************************
 struct ini_struct
 {
-  String         mqttbroker ;                              // The name of the MQTT broker server
-  uint16_t       mqttport ;                                // Port, default 1883
-  String         mqttuser ;                                // User for MQTT authentication
-  String         mqttpasswd ;                              // Password for MQTT authentication
-  String         mqtttopic ;                               // Topic to suscribe to
-  String         mqttpubtopic ;                            // Topic to pubtop (IP will be published)
-  uint8_t        reqvol ;                                  // Requested volume
-  uint8_t        rtone[4] ;                                // Requested bass/treble settings
-  int8_t         newpreset ;                               // Requested preset
-  String         ssid ;                                    // SSID of WiFi network to connect to
-  String         passwd ;                                  // Password for WiFi network
+  String         mqttbroker ;                              // MQTT 代理服务器的名称
+  uint16_t       mqttport ;                                // 端口，默认 1883
+  String         mqttuser ;                                // MQTT认证用户
+  String         mqttpasswd ;                              // MQTT 认证密码
+  String         mqtttopic ;                               // 要订阅的主题
+  String         mqttpubtopic ;                            // 发布到 pubtop 的主题（IP 将被发布）
+  uint8_t        reqvol ;                                  // 请求的音量
+  uint8_t        rtone[4] ;                                // 请求的低音/高音设置
+  int8_t         newpreset ;                               // 请求的预设
+  String         ssid ;                                    // 要连接的 WiFi 网络的 SSID
+  String         passwd ;                                  // WiFi网络密码
 } ;
 
 enum datamode_t { INIT = 1, HEADER = 2, DATA = 4,
@@ -269,20 +269,20 @@ enum datamode_t { INIT = 1, HEADER = 2, DATA = 4,
                   STOPREQD = 128, STOPPED = 256
                 } ;        // State for datastream
 
-// Global variables
+// 全局变量
 int              DEBUG = 1 ;
-ini_struct       ini_block ;                               // Holds configurable data
-WiFiClient       *mp3client = NULL ;                       // An instance of the mp3 client
-AsyncWebServer   cmdserver ( 80 ) ;                        // Instance of embedded webserver on port 80
-AsyncMqttClient  mqttclient ;                              // Client for MQTT subscriber
-IPAddress        mqtt_server_IP ;                          // IP address of MQTT broker
-char             cmd[130] ;                                // Command from MQTT or Serial
+ini_struct       ini_block ;                               // 保存可配置的数据
+WiFiClient       *mp3client = NULL ;                       // mp3 客户端的一个实例
+AsyncWebServer   cmdserver ( 80 ) ;                        // 80 端口上的嵌入式 Web 服务器实例
+AsyncMqttClient  mqttclient ;                              // MQTT 订阅者的客户端
+IPAddress        mqtt_server_IP ;                          // MQTT代理的IP地址
+char             cmd[130] ;                                // 来自 MQTT 或串行的命令
 #if defined ( USETFT )
 TFT_ILI9163C     tft = TFT_ILI9163C ( TFT_CS, TFT_DC ) ;
 #endif
-Ticker           tckr ;                                    // For timing 100 msec
-TinyXML          xml;                                      // For XML parser.
-uint32_t         totalcount = 0 ;                          // Counter mp3 data
+Ticker           tckr ;                                    // 用于计时 100 毫秒
+TinyXML          xml;                                      // 用于XML解析器。
+uint32_t         totalcount = 0 ;                          // 计数器 mp3 数据
 datamode_t       datamode ;                                // State of datastream
 int              metacount ;                               // Number of bytes in metadata
 int              datacount ;                               // Counter databytes before metadata
@@ -358,12 +358,12 @@ String      stationMount( "" ) ;                           // Radio stream Calls
 class VS1053
 {
   private:
-    uint8_t       cs_pin ;                        // Pin where CS line is connected
-    uint8_t       dcs_pin ;                       // Pin where DCS line is connected
-    uint8_t       dreq_pin ;                      // Pin where DREQ line is connected
-    uint8_t       curvol ;                        // Current volume setting 0..100%
+    uint8_t       cs_pin ;                        // CS 线连接的引脚
+    uint8_t       dcs_pin ;                       // DCS 线连接的引脚
+    uint8_t       dreq_pin ;                      // DREQ 线连接的引脚
+    uint8_t       curvol ;                        // 当前音量设置 0..100%
     const uint8_t vs1053_chunk_size = 32 ;
-    // SCI Register
+    // SCI 寄存器
     const uint8_t SCI_MODE          = 0x0 ;
     const uint8_t SCI_BASS          = 0x2 ;
     const uint8_t SCI_CLOCKF        = 0x3 ;
