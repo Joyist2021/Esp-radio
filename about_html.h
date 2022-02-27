@@ -5,7 +5,7 @@ const char about_html[] PROGMEM = R"=====(
 <html>
  <head>
   <title>About ESP-radio</title>
-  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <link rel="Shortcut Icon" type="image/ico" href="favicon.ico">
  </head>
  <body>
