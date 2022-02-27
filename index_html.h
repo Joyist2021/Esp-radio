@@ -20,8 +20,8 @@ const char index_html[] PROGMEM = R"=====(
    <h1>** ESP Radio **</h1>
    <button class="button" onclick="httpGet('downpreset=1')">上一个</button>
    <button class="button" onclick="httpGet('uppreset=1')">下一个</button>
-   <button class="button" onclick="httpGet('downvolume=2')">VOL-</button>
-   <button class="button" onclick="httpGet('upvolume=2')">VOL+</button>
+   <button class="button" onclick="httpGet('downvolume=2')">音量-</button>
+   <button class="button" onclick="httpGet('upvolume=2')">音量+</button>
    <button class="button" onclick="httpGet('stop')">停止</button>
    <button class="button" onclick="httpGet('resume')">继续</button>
    <button class="button" onclick="httpGet('status')">状态</button>
