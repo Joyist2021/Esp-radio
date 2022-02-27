@@ -5,41 +5,41 @@ const char index_html[] PROGMEM = R"=====(
 <html>
  <head>
   <title>ESP-radio</title>
-  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <link rel="Shortcut Icon" type="image/ico" href="favicon.ico">
  </head>
  <body>
   <ul>
    <li><a class="pull-left" href="#">ESP Radio</a></li>
-   <li><a class="pull-left active" href="/index.html">Control</a></li>
-   <li><a class="pull-left" href="/config.html">Config</a></li>
-   <li><a class="pull-left" href="/about.html">About</a></li>
+   <li><a class="pull-left active" href="/index.html">控制</a></li>
+   <li><a class="pull-left" href="/config.html">配置</a></li>
+   <li><a class="pull-left" href="/about.html">关于</a></li>
   </ul>
   <br><br><br>
   <center>
    <h1>** ESP Radio **</h1>
-   <button class="button" onclick="httpGet('downpreset=1')">PREV</button>
-   <button class="button" onclick="httpGet('uppreset=1')">NEXT</button>
+   <button class="button" onclick="httpGet('downpreset=1')">上一个</button>
+   <button class="button" onclick="httpGet('uppreset=1')">下一个</button>
    <button class="button" onclick="httpGet('downvolume=2')">VOL-</button>
    <button class="button" onclick="httpGet('upvolume=2')">VOL+</button>
-   <button class="button" onclick="httpGet('stop')">STOP</button>
-   <button class="button" onclick="httpGet('resume')">RESUME</button>
-   <button class="button" onclick="httpGet('status')">STATUS</button>
-   <button class="button" onclick="httpGet('test')">TEST</button>
+   <button class="button" onclick="httpGet('stop')">停止</button>
+   <button class="button" onclick="httpGet('resume')">继续</button>
+   <button class="button" onclick="httpGet('status')">状态</button>
+   <button class="button" onclick="httpGet('test')">测试</button>
    <table style="width:500px">
     <tr>
      <td colspan="2"><center>
-       <label for="selpres"><big>Preset:</big></label>
+       <label for="selpres"><big>预设:</big></label>
        <br>
        <select class="select selectw" onChange="handlepreset(this)" id="selpres">
-        <option value="-1">Select a preset here</option>
+        <option value="-1">在此处选择预设</option>
        </select>
        <br><br>
      </center></td>
     </tr>
     <tr>
      <td><center>
-      <label for="HA"><big>Treble Gain:</big></label>
+      <label for="HA"><big>高音增益:</big></label>
       <br>
       <select class="select" onChange="handletone(this)" id="HA">
        <option value="8">-12 dB</option>
@@ -62,7 +62,7 @@ const char index_html[] PROGMEM = R"=====(
       <br><br>
      </td>
      <td><center>
-      <label for="HF"><big>Treble Freq:</big></label>
+      <label for="HF"><big>高音频率:</big></label>
       <br>
       <select class="select" onChange="handletone(this)" id="HF">
         <option value="1">1 kHz</option>
@@ -87,7 +87,7 @@ const char index_html[] PROGMEM = R"=====(
     </tr>
     <tr>
      <td><center>
-      <label for="LA"><big>Bass Gain:</big></label>
+      <label for="LA"><big>低音增益:</big></label>
       <br>
       <select class="select" onChange="handletone(this)" id="LA">
        <option value="0" selected>Off</option>
@@ -110,7 +110,7 @@ const char index_html[] PROGMEM = R"=====(
       <br>
      </td>
      <td><center>
-      <label for="LF"><big>Bass Freq:</big></label>
+      <label for="LF"><big>低音频率:</big></label>
       <br>
       <select class="select" onChange="handletone(this)" id="LF">
        <option value="2">10 Hz</option>
@@ -137,10 +137,10 @@ const char index_html[] PROGMEM = R"=====(
    <button class="button button-play" onclick="setstat()">PLAY</button>
    <br>
    <br>
-   <input type="text" width="600px" size="72" id="resultstr" placeholder="Waiting for a command...."><br>
+   <input type="text" width="600px" size="72" id="resultstr" placeholder="等待命令...."><br>
    <br><br>
-   <p>Find new radio stations at <a target="blank" href="http://www.internet-radio.com">http://www.internet-radio.com</a></p>
-   <p>Examples: us1.internet-radio.com:8105, skonto.ls.lv:8002/mp3, 85.17.121.103:8800</p><br>
+   <p>在<a target="blank" href="http://www.internet-radio.com">http://www.internet-radio.com</a>查找新的广播电台</p>
+   <p>示例: us1.internet-radio.com:8105, skonto.ls.lv:8002/mp3, 85.17.121.103:8800</p><br>
   </center>
   <script>
    function httpGet ( theReq )
@@ -226,6 +226,6 @@ const char index_html[] PROGMEM = R"=====(
 </html>
 <noscript>
   <link rel="stylesheet" href="radio.css">
-  Sorry, ESP-radio does not work without JavaScript!
+  对不起，ESP-radio没有JavaScript就无法工作！
 </noscript>
 )=====" ;
