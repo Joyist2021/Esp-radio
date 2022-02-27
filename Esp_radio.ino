@@ -3173,16 +3173,16 @@ char* analyzeCmd ( const char* par, const char* val )
 
 
 //******************************************************************************************
-//                             H A N D L E C M D                                           *
+//                             处理 CMD                                           *
 //******************************************************************************************
-// Handling of the various commands from remote (case sensitive). All commands have the    *
-// form "/?parameter[=value]".  Example: "/?volume=50".                                    *
-// The startpage will be returned if no arguments are given.                               *
-// Multiple parameters are ignored.  An extra parameter may be "version=<random number>"   *
-// in order to prevent browsers like Edge and IE to use their cache.  This "version" is    *
-// ignored.                                                                                *
-// Example: "/?upvolume=5&version=0.9775479450590543"                                      *
-// The save and the list commands are handled specially.                                   *
+// 远程处理各种命令(区分大小写)。    *
+// 所有命令的格式都是"/?parameter[=value]".  示例：音量=50 "/?volume=50".                                    *
+// 如果没有给出参数，则返回起始页。                               *
+// 忽略多个参数。一个额外的参数可以是"version=<random number>"   *
+// 以防止Edge和IE等浏览器使用它们的缓存。    *
+// 此“版本”将被忽略。                                                                                *
+// 示例： "/?upvolume=5&version=0.9775479450590543"                                      *
+// 保存和列表命令是特殊处理的。                                 *
 //******************************************************************************************
 void handleCmd ( AsyncWebServerRequest* request )
 {
