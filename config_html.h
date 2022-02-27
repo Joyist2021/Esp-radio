@@ -30,7 +30,7 @@ const char config_html[] PROGMEM = R"=====(
    <form action="#" onsubmit="return uploadfile(this);" enctype="multipart/form-data" method="post" name="fileinfo">
      <h4>上传文件:</h4>
      <input type="file" name="file" size="50"><br>
-     <input type="submit" value="Send">
+     <input type="submit" value="发送">
     </form>
     <br><input type="text" size="80" id="resultstr" placeholder="等待输入....">
     <br><br>
