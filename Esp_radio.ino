@@ -40,7 +40,7 @@
 // 在大多数情况下，元数据是空的，但如果有可用的元数据，则内容将显示在TFT上。
 // 按下输入按钮，播放器就会选择ini文件中的下一个预设站。
 //
-// 使用的显示器中国1.8彩色TFT模块128 x 160像素。
+// 使用的显示器TFT_ILI9163C中国1.8彩色TFT模块128 x 160像素。
 // TFT_ILI9163C.h文件已被更改，以反映这个特定的模块。
 // TFT_ILI9163C.cpp已被更改为使用全屏幕宽度，如果旋转到模式"3"。
 // 现在每行有26个字符和16行。软件不需要安装显示器也能工作。
@@ -1884,17 +1884,17 @@ void setup()
     dbgprint ( "%-32s - %7d",                          // Show name and size
                filename.c_str(), f.size() ) ;
   }
-  mk_lsan() ;                                          // Make a list of acceptable networks in ini file.
-  listNetworks() ;                                     // Search for WiFi networks
-  readinifile() ;                                      // Read .ini file
-  getpresets() ;                                       // Get the presets from .ini-file
-  WiFi.setPhyMode ( WIFI_PHY_MODE_11N ) ;              // Force 802.11N connection
-  WiFi.persistent ( false ) ;                          // Do not save SSID and password
-  WiFi.disconnect() ;                                  // The router may keep the old connection
-  WiFi.mode ( WIFI_STA ) ;                             // This ESP is a station
+  mk_lsan() ;                                          // 在 data\radio.ini 文件中列出可接受的网络。
+  listNetworks() ;                                     // 搜索 WiFi 网络
+  readinifile() ;                                      // 读取 .ini 文件
+  getpresets() ;                                       // 从 .ini 文件中获取预设
+  WiFi.setPhyMode ( WIFI_PHY_MODE_11N ) ;              // 强制 802.11N 连接
+  WiFi.persistent ( false ) ;                          // 不保存SSID和密码
+  WiFi.disconnect() ;                                  // 路由器可能会保持旧连接
+  WiFi.mode ( WIFI_STA ) ;                             // 该ESP为站点station模式。
   wifi_station_set_hostname ( (char*)NAME ) ;
-  SPI.begin() ;                                        // Init SPI bus
-  // Print some memory and sketch info
+  SPI.begin() ;                                        // 初始化SPI总线。
+  // 打印一些内存和草图信息
   dbgprint ( "Starting ESP Version %s...  Free memory %d",
              VERSION,
              system_get_free_heap_size() ) ;
@@ -2886,43 +2886,43 @@ String chomp ( String str )
 
 
 //******************************************************************************************
-//                             A N A L Y Z E C M D                                         *
+//                             分析 CMD                                         *
 //******************************************************************************************
-// Handling of the various commands from remote webclient, serial or MQTT.                 *
-// par holds the parametername and val holds the value.                                    *
-// "wifi_00" and "preset_00" may appear more than once, like wifi_01, wifi_02, etc.        *
-// Examples with available parameters:                                                     *
-//   preset     = 12                        // Select start preset to connect to           *
-//   preset_00  = <mp3 stream>              // Specify station for a preset 00-99 *)       *
-//   volume     = 95                        // Percentage between 0 and 100                *
-//   upvolume   = 2                         // Add percentage to current volume            *
-//   downvolume = 2                         // Subtract percentage from current volume     *
-//   toneha     = <0..15>                   // Setting treble gain                         *
-//   tonehf     = <0..15>                   // Setting treble frequency                    *
-//   tonela     = <0..15>                   // Setting bass gain                           *
-//   tonelf     = <0..15>                   // Setting treble frequency                    *
-//   station    = <mp3 stream>              // Select new station (will not be saved)      *
-//   station    = <URL>.mp3                 // Play standalone .mp3 file (not saved)       *
-//   station    = <URL>.m3u                 // Select playlist (will not be saved)         *
-//   stop                                   // Stop playing                                *
-//   resume                                 // Resume playing                              *
-//   mute                                   // Mute the music                              *
-//   unmute                                 // Unmute the music                            *
-//   wifi_00    = mySSID/mypassword         // Set WiFi SSID and password *)               *
-//   mqttbroker = mybroker.com              // Set MQTT broker to use *)                   *
-//   mqttport   = 1883                      // Set MQTT port to use, default 1883 *)       *
-//   mqttuser   = myuser                    // Set MQTT user for authentication *)         *
-//   mqttpasswd = mypassword                // Set MQTT password for authentication *)     *
-//   mqtttopic  = mytopic                   // Set MQTT topic to subscribe to *)           *
-//   mqttpubtopic = mypubtopic              // Set MQTT topic to publish to *)             *
-//   status                                 // Show current URL to play                    *
-//   testfile   = <file on SPIFFS>          // Test SPIFFS reads for debugging purpose     *
-//   test                                   // For test purposes                           *
-//   debug      = 0 or 1                    // Switch debugging on or off                  *
-//   reset                                  // Restart the ESP8266                         *
-//   analog                                 // Show current analog input                   *
-// Commands marked with "*)" are sensible in ini-file only                                 *
-// Note that it is adviced to avoid expressions as the argument for the abs function.      *
+// 处理来自远程webclient，串行或MQTT的各种命令。                 *
+// par保存参数名，val保存值。                                    *
+// "wifi_00" 和 "preset_00" 可以出现多次，像wifi_01, wifi_02等        *
+// 带有参数的示例:                                                     *
+//   preset     = 12                        // 选择要连接的起始预设           *
+//   preset_00  = <mp3 stream>              // 为预设 00-99 指定电台 *)       *
+//   volume     = 95                        // 音量0 到 100 之间的百分比                *
+//   upvolume   = 2                         // 添加百分比到当前音量            *
+//   downvolume = 2                         // 从当前音量中减去百分比     *
+//   toneha     = <0..15>                   // 设置高音增益                         *
+//   tonehf     = <0..15>                   // 设置高音频率                    *
+//   tonela     = <0..15>                   // 设置低音增益                           *
+//   tonelf     = <0..15>                   // 设置高音频率                    *
+//   station    = <mp3 stream>              // 选择新电台（不会被保存）      *
+//   station    = <URL>.mp3                 // 播放独立的 .mp3 文件（未保存）       *
+//   station    = <URL>.m3u                 // 选择播放列表（不会被保存）         *
+//   stop                                   // 停止播放                                *
+//   resume                                 // 继续播放                              *
+//   mute                                   // 将音乐静音                              *
+//   unmute                                 // 取消音乐静音                            *
+//   wifi_00    = mySSID/mypassword         // 设置 WiFi SSID 和密码 *)               *
+//   mqttbroker = mybroker.com              // 设置要使用的 MQTT 代理 *)                   *
+//   mqttport   = 1883                      // 设置要使用的 MQTT 端口，默认 1883 *)       *
+//   mqttuser   = myuser                    // 设置 MQTT 用户进行认证 *)         *
+//   mqttpasswd = mypassword                // 设置 MQTT 验证密码 *)     *
+//   mqtttopic  = mytopic                   // 设置 MQTT 主题订阅 *)           *
+//   mqttpubtopic = mypubtopic              // 设置 MQTT 主题发布为 *)             *
+//   status                                 // 显示当前播放的 URL                    *
+//   testfile   = <file on SPIFFS>          // 测试 SPIFFS 读取以进行调试     *
+//   test                                   // 用于测试目的                           *
+//   debug      = 0 or 1                    // 打开或关闭调试                  *
+//   reset                                  // 重启 ESP8266                         *
+//   analog                                 // 显示当前模拟输入                   *
+// 标有“*)”的命令仅在ini文件中有效*。                                 *
+// 注意，建议避免使用表达式作为abs函数的参数。      *
 //******************************************************************************************
 char* analyzeCmd ( const char* par, const char* val )
 {
