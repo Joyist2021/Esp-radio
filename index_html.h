@@ -50,7 +50,7 @@ const char index_html[] PROGMEM = R"=====(
        <option value="13">-4.5 dB</option>
        <option value="14">-3 dB</option>
        <option value="15">-1.5 dB</option>
-       <option value="0" selected>Off</option>
+       <option value="0" selected>关闭</option>
        <option value="1">+1.5 dB</option>
        <option value="2">+3 dB</option>
        <option value="3">+4.5 dB</option>
@@ -90,7 +90,7 @@ const char index_html[] PROGMEM = R"=====(
       <label for="LA"><big>低音增益:</big></label>
       <br>
       <select class="select" onChange="handletone(this)" id="LA">
-       <option value="0" selected>Off</option>
+       <option value="0" selected>关闭</option>
        <option value="1">+1 dB</option>
        <option value="2">+2 dB</option>
        <option value="3">+3 dB</option>
@@ -133,7 +133,7 @@ const char index_html[] PROGMEM = R"=====(
     </tr>
    </table>
    <br>
-   <input type="text" size="60" id="station" placeholder="Enter a station/file here....">
+   <input type="text" size="60" id="station" placeholder="在此处输入电台/文件....">
    <button class="button button-play" onclick="setstat()">PLAY</button>
    <br>
    <br>
@@ -193,7 +193,7 @@ const char index_html[] PROGMEM = R"=====(
      xhr.open ( "GET", theUrl, false ) ;
      xhr.send() ;
    }
-   // Fill preset list initially
+   // 最初填写预设列表
    //
    var i, select, opt, stations ;
    select = document.getElementById("selpres") ;
