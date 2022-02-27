@@ -4,35 +4,35 @@ const char config_html[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
  <head>
-  <title>Configuration ESP-radio</title>
-  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <title>配置ESP-radio</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <link rel="Shortcut Icon" type="image/ico" href="favicon.ico">
  </head>
  <body>
   <ul>
    <li><a class="pull-left" href="#">ESP Radio</a></li>
-   <li><a class="pull-left" href="/index.html">Control</a></li>
-   <li><a class="pull-left active" href="/config.html">Config</a></li>
-   <li><a class="pull-left" href="/about.html">About</a></li>
+   <li><a class="pull-left" href="/index.html">控制</a></li>
+   <li><a class="pull-left active" href="/config.html">配置</a></li>
+   <li><a class="pull-left" href="/about.html">关于</a></li>
   </ul>
   <br><br><br>
   <center>
    <h1>** ESP Radio **</h1>
-   <p>You can edit the configuration here. <i>Note that this will be effective on the next restart of the Esp-radio.</i></p>
-   <h4>Available WiFi networks</h4>
+   <p>您可以在此处编辑配置。<i>请注意，这将在下次重启 Esp-radio 时生效。</i></p>
+   <h4>可用的 WiFi 网络</h4>
    <select class="select" onChange="handletone(this)" id="ssid"></select>
    <br><br>
-   <textarea rows="25" cols="100" id="inifile">Space for inifile</textarea> 
+   <textarea rows="25" cols="100" id="inifile">ini文件空间</textarea> 
    <br><br>
-   <button class="button" onclick="fsav()">Save</button>
+   <button class="button" onclick="fsav()">保存</button>
    &nbsp;&nbsp;
-   <button class="button buttonr" onclick="httpGet('reset')">Restart</button>
+   <button class="button buttonr" onclick="httpGet('reset')">重启</button>
    <form action="#" onsubmit="return uploadfile(this);" enctype="multipart/form-data" method="post" name="fileinfo">
-     <h4>Upload file:</h4>
+     <h4>上传文件:</h4>
      <input type="file" name="file" size="50"><br>
      <input type="submit" value="Send">
     </form>
-    <br><input type="text" size="80" id="resultstr" placeholder="Waiting for input....">
+    <br><input type="text" size="80" id="resultstr" placeholder="等待输入....">
     <br><br>
 
     <script>
@@ -89,8 +89,8 @@ const char config_html[] PROGMEM = R"=====(
         return false ;
       }
 
-      // Fill configuration initially
-      // First the available WiFi networks
+      // 初始填充配置
+      // 首先是可用的 WiFi 网络
       var i, select, opt, networks, params ;
 
       select = document.getElementById("selnet") ;
@@ -113,7 +113,7 @@ const char config_html[] PROGMEM = R"=====(
       xhr.open ( "GET", theUrl, false ) ;
       xhr.send() ;
 
-      // Now get the configuration parameters from radio.ini
+      // 现在从 radio.ini 中获取配置参数
       theUrl = "/radio.ini" ;
       xhr.onreadystatechange = function() {
         if ( xhr.readyState == XMLHttpRequest.DONE )
