@@ -1,34 +1,34 @@
 //******************************************************************************************
-// SPI RAM routines.                                                                       *
+// SPI RAM 例程。                                                                      *
 //******************************************************************************************
-// Use SPI RAM as a circular buffer with chunks of 32 bytes.                               *
+// 使用 SPI RAM 作为 32 字节块的循环缓冲区。                              *
 //******************************************************************************************
 
 #include <ESP8266Spiram.h>                  // https://github.com/Gianbacchio/ESP8266_Spiram
 
-#define SRAM_SIZE  131072                   // Total size SPI ram in bytes
-#define CHUNKSIZE      32                   // Chunk size
-#define SRAM_CH_SIZE 4096                   // Total size SPI ram in chunks
+#define SRAM_SIZE  131072                   // 总大小 SPI ram（bytes字节为单位）
+#define CHUNKSIZE      32                   // 块大小
+#define SRAM_CH_SIZE 4096                   // 以块为单位 的总大小 SPI ram
 
-#define SRAM_CS        10                   // GPIO1O SRAM CS pin
-#define SRAM_FREQ    16e6                   // The 23LC1024 supports theorically up to 20MHz
+#define SRAM_CS        10                   // GPIO1O SRAM CS 引脚
+#define SRAM_FREQ    16e6                   // 理论上支持最高20MHz 
 
-// SRAM opcodes
+// SRAM opcodes操作码
 #define SRAM_READ    0x03
 #define SRAM_WRITE   0x02
 
-// Global variables
-uint16_t   chcount ;                       // Number of chunks currently in buffer
-uint32_t   readinx ;                       // Read index
-uint32_t   writeinx ;                      // write index
+// 全局变量
+uint16_t   chcount ;                       // 当前在缓冲区中的块数
+uint32_t   readinx ;                       // 读取索引
+uint32_t   writeinx ;                      // 写索引
 
 ESP8266Spiram spiram ( SRAM_CS, SRAM_FREQ ) ;
 
 
 //******************************************************************************************
-//                              S P A C E A V A I L A B L E                                *
+//                              可用空间                                *
 //******************************************************************************************
-// Returns true if bufferspace is available.                                               *
+// 如果缓冲区空间可用，则返回 true。                                               *
 //******************************************************************************************
 bool spaceAvailable()
 {
@@ -37,9 +37,9 @@ bool spaceAvailable()
 
 
 //******************************************************************************************
-//                              D A T A A V A I L A B L E                                  *
+//                              可用数据                                  *
 //******************************************************************************************
-// Returns the number of chunks available in the buffer.                                   *
+// 返回缓冲区中可用的块数。                                   *
 //******************************************************************************************
 uint16_t dataAvailable()
 {
@@ -48,60 +48,60 @@ uint16_t dataAvailable()
 
 
 //******************************************************************************************
-//                    G E T F R E E B U F F E R S P A C E                                  *
+//                    获得空闲的缓冲区空间                                 *
 //******************************************************************************************
-// Return the free buffer space in chunks.                                                 *
+// 以块的形式返回空闲的缓冲区空间。                                                 *
 //******************************************************************************************
 uint16_t getFreeBufferSpace()
 {
-  return ( SRAM_CH_SIZE - chcount ) ;                   // Return number of chunks available
+  return ( SRAM_CH_SIZE - chcount ) ;                   // 返回可用的块数
 }
 
 
 //******************************************************************************************
-//                             B U F F E R W R I T E                                       *
+//                             缓冲区写入                                      *
 //******************************************************************************************
-// Write one chunk (32 bytes) to SPI RAM.                                                  *
-// No check on available space.  See spaceAvailable().                                     *
+// 将一个块（32 字节）写入 SPI RAM。                                                  *
+// 不检查可用空间。 请参阅 spaceAvailable().                                     *
 //******************************************************************************************
 void bufferWrite ( uint8_t *b )
 {
-  spiram.write ( writeinx * CHUNKSIZE, b, CHUNKSIZE ) ; // Put byte in SRAM
-  writeinx = ( writeinx + 1 ) % SRAM_CH_SIZE ;          // Increment and wrap if necessary
-  chcount++ ;                                           // Count number of chunks
+  spiram.write ( writeinx * CHUNKSIZE, b, CHUNKSIZE ) ; // 将字节放入 SRAM
+  writeinx = ( writeinx + 1 ) % SRAM_CH_SIZE ;          // 必要时递增和换行
+  chcount++ ;                                           // 计算块数
 }
 
 
 //******************************************************************************************
-//                             B U F F E R R E A D                                         *
+//                             缓冲读取                                         *
 //******************************************************************************************
-// Read one chunk in the user buffer.                                                      *
-// Assume there is always something in the bufferpace.  See dataAvailable()                *
+// 读取用户缓冲区中的一个块。                                                     *
+// 假设缓冲区中总是有东西。见 dataAvailable()                *
 //******************************************************************************************
 void bufferRead ( uint8_t *b )
 {
-  spiram.read ( readinx * CHUNKSIZE, b, CHUNKSIZE ) ;   // return next chunk
-  readinx = ( readinx + 1 ) % SRAM_CH_SIZE ;            // Increment and wrap if necessary
-  chcount-- ;                                           // Count is now one less
+  spiram.read ( readinx * CHUNKSIZE, b, CHUNKSIZE ) ;   // 返回下一个块
+  readinx = ( readinx + 1 ) % SRAM_CH_SIZE ;            // 必要时递增和换行
+  chcount-- ;                                           // 计数现在少一
 }
 
 
 //******************************************************************************************
-//                            B U F F E R R E S E T                                        *
+//                            缓冲区重置                                        *
 //******************************************************************************************
 void bufferReset()
 {
-  readinx = 0 ;                                         // Reset ringbuffer administration
+  readinx = 0 ;                                         // 重置环形缓冲区管理
   writeinx = 0 ;
   chcount = 0 ;
 }
 
 
 //******************************************************************************************
-//                                S P I R A M S E T U P                                    *
+//                                SPI RAM 设置                                    *
 //******************************************************************************************
 void spiramSetup()
 {
-  spiram.begin() ;                                  // Init ESP8266Spiram
-  bufferReset() ;                                   // Reset ringbuffer administration
+  spiram.begin() ;                                  // 初始化 ESP8266Spiram
+  bufferReset() ;                                   // 重置环形缓冲区管理
 }
