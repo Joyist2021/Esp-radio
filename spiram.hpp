@@ -4,7 +4,7 @@
 
 #ifndef _SPIRAM_HPP
   #define SRAM_CS        10                   // GPIO1O CS pin
-  #define SRAM_FREQ    13e6                   // The 23LC1024 supports theorically up to 20MHz
+  #define SRAM_FREQ    13e6                   // 23LC1024 理论上支持最高20MHz
 
   bool spaceAvailable() ;
   uint16_t dataAvailable() ;
